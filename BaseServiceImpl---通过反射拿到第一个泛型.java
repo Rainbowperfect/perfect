@@ -1,10 +1,3 @@
-package org.taotao.manager.service.impl;
-
-import org.github.abel533.entity.Example;
-import org.github.abel533.mapper.Mapper;
-import org.github.pagehelper.PageHelper;
-import org.taotao.manager.pojo.BasePojo;
-import org.taotao.manager.service.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.ParameterizedType;
@@ -12,12 +5,6 @@ import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
 
-/**
- * @author steven
- * @version 1.0
- * @description org.taotao.manager.service.impl
- * @date 2018-2-8
- */
 public class BaseServiceImpl<T extends BasePojo> implements BaseService<T> {
 
     private Class<T> clazz;
