@@ -1,13 +1,9 @@
-package com.taotao.manager.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.taotao.manager.jedis.RedisUtils;
-import com.taotao.manager.pojo.Content;
-import com.taotao.manager.service.ContentService;
-import com.taotao.manager.utils.TaoResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,12 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author steven
- * @version 1.0
- * @description com.taotao.manager.service.impl
- * @date 2018-2-25
- */
+
 @Service
 public class ContentServiceImpl extends BaseServiceImpl<Content> implements ContentService {
 
