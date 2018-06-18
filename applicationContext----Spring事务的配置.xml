@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:tx="http://www.springframework.org/schema/tx" 
+        xmlns:context="http://www.springframework.org/schema/context"
+        
+        xsi:schemaLocation="
+         	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+		<!-- 创建userServiceImpl的实例，要求注入userDao -->
+      <bean id="userService" class="org.person.service.impl.UserServiceImpl">
+      	<property name="userDao" ref="userDao"></property>
+      </bean>
+      
+		<!-- 创建userDaoImpl的实例，要求注入jdbcTemplate -->
+       <bean id="userDao" class="org.person.dao.impl.UserDaoImpl">
+      	<property name="jdbcTemplate" ref="jdbcTemplate"></property>
+      </bean>
+     
+     
+		<!-- 创建jdbcTemplate的实例，要求注入dataSource -->
+      <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+      	<property name="dataSource" ref="dataSource"></property>
+      </bean>
+      
+		<!-- 创建dataSource的实例，要求注入连接数据区驱动、地址、用户名和密码 -->
+      <!-- <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+      	<property name="driverClassName" value="org.mysql.jdbc.Driver"></property>
+      	<property name="url" value="jdbc:mysql:///user"></property>
+      	<property name="username" value="root"></property>
+      	<property name="password" value="root"></property>
+      </bean> -->
+      
+      
+      <!-- 导入jdbc.properties -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    
+    	<!-- 使用c3p0连接池 -->
+      <bean id="dataSource" class="org.mchange.v2.c3p0.orgboPooledDataSource">
+      	<property name="driverClass" value="${driverClass}"></property>
+      	<property name="jdbcUrl" value="${jdbcUrl}"></property>
+      	<property name="user" value="${user}"></property>
+      	<property name="password" value="${password}"></property>
+      </bean>
+      
+     
+      
+      
+      <!-- 开始配置事务管理 -->
+      
+      <!-- 1. 一定要先有管理员 -->
+      <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+      	<property name="dataSource" ref="dataSource"></property>
+      </bean>
+      
+      <!-- 2. 配置事务  事务的建议 指定管理员-->
+      <tx:advice id="advice01" transaction-manager="transactionManager">
+      
+      <!-- 
+      		这里的配置，就是对下面的表达式找到的方法，再做一次事务的规定。 如果是 * 表示前面的表达式找到的所有方法都用事务来管理。
+      		如果只想给单一的方法用事务 ， 就写方法名 
+      		如果是一种通用的方法名称，  save*  update*
+      			<tx:method name="save*"/>
+      			<tx:method name="update*"/>
+      		-->
+      		<tx:attributes>
+      			<tx:method name="*"/>
+      		</tx:attributes>
+      </tx:advice>
+      
+      <!-- 配置aop, 以便找到哪些方法 ，给他们用事务管理起来 -->
+      
+      <aop:config>
+      	<!-- 这个表达式能够找到那些方法~~~给那些方法用事务管理起来 这个表达式本身的意思就是找方法而已。 -->
+      	<aop:pointcut expression="execution(* org.person.service.impl.*.*(..))" id="pointCut01"/>
+      	
+      	<aop:advisor advice-ref="advice01" pointcut-ref="pointCut01"/>
+      </aop:config>
+      
+      
+      
+</beans>        

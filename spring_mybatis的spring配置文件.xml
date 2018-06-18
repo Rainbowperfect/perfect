@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+
+    <!--包扫描-->
+    <context:component-scan base-package="org.person.mybatis" />
+
+    <!-- 解析jdbc配置文件 -->
+    <context:property-placeholder location="classpath:jdbc.properties" />
+
+    <!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean
+        below) 事务传播特性配置 -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <!-- the transactional semantics... -->
+        <tx:attributes>
+            <tx:method name="add*" propagation="REQUIRED" isolation="DEFAULT"
+                       rollback-for="java.lang.Exception" />
+            <tx:method name="save*" propagation="REQUIRED" isolation="DEFAULT"
+                       rollback-for="java.lang.Exception" />
+            <tx:method name="insert*" propagation="REQUIRED" isolation="DEFAULT"
+                       rollback-for="java.lang.Exception" />
+            <tx:method name="update*" propagation="REQUIRED" isolation="DEFAULT"
+                       rollback-for="java.lang.Exception" />
+            <tx:method name="modify*" propagation="REQUIRED" isolation="DEFAULT"
+                       rollback-for="java.lang.Exception" />
+            <tx:method name="delete*" propagation="REQUIRED" isolation="DEFAULT"
+                       rollback-for="java.lang.Exception" />
+
+            <!-- 查询方法 -->
+            <tx:method name="query*" read-only="true" />
+            <tx:method name="select*" read-only="true" />
+            <tx:method name="find*" read-only="true" />
+        </tx:attributes>
+    </tx:advice>
+
+
+    <!-- 配置事务管理器 -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+
+    <!-- 数据库基本信息配置 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" in-method="in" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.pwd}" />
+    </bean>
+
+    <!-- 声明式事务AOP配置 -->
+    <aop:config>
+        <aop:pointcut expression="execution(* org.person.mybatis.service.impl.*.*(..))" id="tranpointcut" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="tranpointcut" />
+    </aop:config>
+    
+    
+    <!-- 
+    	集成MyBatis
+    	1、mybatis配置文件在哪里
+    	2、别名配置
+    	3、映射文件所在位置
+    	4、指定数据源
+    -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    	<property name="configLocation" value="classpath:mybatis.xml" />
+    	<property name="typeAliasesPackage" value="org.person.mybatis.model" />
+    	<property name="mapperLocations">
+    		<list>
+    			<value>classpath:org/person/mybatis/dao/*.xml</value>
+    		</list>
+    	</property>
+    	<property name="dataSource" ref="dataSource" />
+    </bean>
+    
+    
+    <!-- 接口扫描 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    	<property name="basePackage" value="org.person.mybatis.dao" />
+    	<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+    </bean>
+   
+
+
+</beans>
