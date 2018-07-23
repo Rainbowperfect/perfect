@@ -1,5 +1,3 @@
-package com.taotao.manager.utils;
-
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
