@@ -1,5 +1,3 @@
-package cn.itcast.httpclient;
-
 import java.util.ArrayList;
 import java.util.List;
 
