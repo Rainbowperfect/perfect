@@ -9,7 +9,7 @@
     </settings>
 
     <typeAliases>
-        <package name="com.itheima.mybatis.pojo" />
+        <package name="com.person.mybatis.pojo" />
     </typeAliases>
 
     <plugins>
