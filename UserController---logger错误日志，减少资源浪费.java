@@ -1,7 +1,5 @@
-package com.taotao.sso.controller;
-
-import com.taotao.manager.pojo.User;
-import com.taotao.sso.service.UserService;
+import com.org.manager.pojo.User;
+import com.org.sso.service.UserService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,10 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
- * @author steven
  * @version 1.0
- * @description com.taotao.sso.controller
- * @date 2018-3-1
+ * @description com.org.sso.controller
  */
 @Controller
 @RequestMapping("user")
@@ -23,7 +19,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    //http://sso.taotao.com/user/check/{param}/{type}
+    //http://sso.org.com/user/check/{param}/{type}
     @RequestMapping("check/{param}/{type}")
     public ResponseEntity<String> check(@PathVariable String param,@PathVariable Integer type,String callback){
         //如果type不在1-3之内，反回参数无效错误码
@@ -43,7 +39,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(callback + "(" + false + ")");
     }
 
-    //http://sso.taotao.com/user/{ticket}
+    //http://sso.org.com/user/{ticket}
     @RequestMapping("{ticket}")
     public ResponseEntity<User> queryUserByTicket(@PathVariable String ticket){
         try {
