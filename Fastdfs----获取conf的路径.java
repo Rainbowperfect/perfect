@@ -4,10 +4,6 @@ import org.csource.fastdfs.*;
 import java.io.IOException;
 
 /**
- * @author steven
- * @version 1.0
- * @description PACKAGE_NAME
- * @date 2018-2-24
  *获取conf的路径的方法是：System.getProperty("user.dir")，在idea中setting-->application 中设置Working directory 改为$MODULE_DIR$;
  */
 public class FastdfsTest {
