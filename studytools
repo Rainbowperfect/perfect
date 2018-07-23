@@ -1,1 +1,215 @@
 
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.orbitz.apache.commons.lang3.StringUtils;
+
+
+@Controller
+@RequestMapping("/task")
+public class TaskController extends BaseController
+{
+    
+    private static final Logger log = LoggerFactory.getLogger(TaskController.class);
+    
+    @Autowired
+    private TaskService taskService;
+    
+    @Autowired
+    private ProjectService projectService;
+    
+    @Autowired
+    private TermService termService;
+    
+    
+    @GetMapping(value = "/query/page")
+    @ResponseBody
+    public BaseResponseMsg queryMyTask(HttpServletRequest request, Integer limit, Integer offset)
+    {
+        
+        BaseResponseMsg msg = new BaseResponseMsg();
+        ResponseHead head = new ResponseHead();
+        TaskResponseBody body = new TaskResponseBody();
+        msg.setHead(head);
+        msg.setBody(body);
+        
+        String sysUid = getSysuid(request);
+        int total = 0;
+        try
+        {
+            total = taskService.getMyTaskCount("1", sysUid);
+            if (total <= 0)
+            {
+                head.setFlag(true);
+                body.setTotal(0);
+                return msg;
+            }
+        }
+        catch (ServiceException e)
+        {
+            CodeCCUtils.errorLog(log, "taskService.getMyTaskCount failed", e);
+            head.setFlag(false);
+            head.setErrorcode(ErrorCodeConstant.ERROR_CODE_INTERNALEXCEPTION);
+        }
+        
+        List<TaskEx> taskList = null;
+        try
+        {
+            taskList = taskService.getMyTask("1", sysUid, offset, limit);
+        }
+        catch (ServiceException e)
+        {
+            CodeCCUtils.errorLog(log, "taskService.getMyTask failed", e);
+            head.setFlag(false);
+            head.setErrorcode(ErrorCodeConstant.ERROR_CODE_INTERNALEXCEPTION);
+            return msg;
+        }
+        if (CollectionUtils.isEmpty(taskList))
+        {
+            head.setFlag(false);
+            head.setErrorcode(ErrorCodeConstant.ERROR_CODE_INTERNALEXCEPTION);
+            return msg;
+        }
+        
+        Map<String,String> projectNameMap = new HashMap<>();
+        Map<String,String> projectIdMap = new HashMap<>();
+        packageData(taskList,projectNameMap,projectIdMap);
+        
+        head.setFlag(true);
+        body.setProjectIdMap(projectIdMap);
+        body.setProjectNameMap(projectNameMap);
+        body.setTaskList(taskList);
+        body.setTotal(total);
+        return msg;
+    }
+    
+    private void packageData(List<TaskEx> taskList,Map<String,String> projectNameMap,Map<String,String> projectIdMap)
+    {
+        List<String> taskIdList = new ArrayList<>();
+        Set<String> sysUidSet = new HashSet<>();
+        
+        for (TaskEx task : taskList)
+        {
+            taskIdList.add(task.getTaskId());
+            
+            String owner = task.getOwner();
+            String[] ownerList = owner.split(";");
+            
+            sysUidSet.addAll(Arrays.asList(ownerList));
+            
+        }
+        
+        Map<String,String> ownerMap = new HashMap<>(); 
+        Map<String,String> termMap = new HashMap<>();
+
+        packageProjectName(taskIdList,projectNameMap,projectIdMap);
+        packageAuthor(sysUidSet,ownerMap);
+        getTermMap(taskIdList,CommonConstant.PROJECT_TASKTYPE,termMap);
+        for(TaskEx task : taskList)
+        {
+            StringBuffer sb = new StringBuffer();
+            String owner = task.getOwner();
+            String[] ownerArr = owner.split(";");
+            for(String tmp : ownerArr)
+            {
+                String uid = ownerMap.get(tmp);
+                if(!StringUtils.isBlank(uid))
+                {                    
+                    sb.append(ownerMap.get(tmp)).append(";");
+                }
+                
+            }
+            task.setOwnerUser(sb.length() > 0 ?sb.substring(0, sb.length()-1) : task.getOwner());
+            
+            
+            task.setTaskType(termMap.get(task.getTaskType()));
+        }
+        
+        
+    }
+    
+    
+    private void packageProjectName(List<String> taskIdList, Map<String,String> projectNameMap,Map<String,String> projectIdMap)
+    {
+        for(String taskId : taskIdList)
+        {
+            try
+            {
+                Project project = projectService.getProjectBasicByTaskId(taskId);
+                
+                if(project != null)
+                {
+                    projectNameMap.put(taskId, project.getName());
+                    projectIdMap.put(taskId, project.getPid());
+                }
+            }
+            catch (ServiceException e)
+            {
+                CodeCCUtils.errorLog(log, "projectService.getProjectBasicByTaskId failed", e);
+                continue;
+            }
+        }
+    }
+    private void packageAuthor(Set<String> sysUidSet,Map<String,String> ownerMap)
+    {
+        
+        List<String> sysUidList = new ArrayList<>(sysUidSet);
+        List<String> userIdList = null;
+        try
+        {
+            userIdList = UserConversionUtil.transSysUidToUserId(sysUidList);
+        }
+        catch (Exception e)
+        {
+            CodeCCUtils.errorLog(log, "UserConversionUtil.transSysUidToUserId failed", e);
+            return;
+        }
+        for(int i = 0; i < userIdList.size(); i++)
+        {
+            ownerMap.put(sysUidList.get(i), userIdList.get(i));
+        }
+    }
+    
+    private void getTermMap(List<String> taskIdList,String termId,Map<String,String> termMap)
+    {
+        List<Term> termList = null;
+        try
+        {
+            termList = termService.getSubterms(termId);
+        }
+        catch (ServiceException e)
+        {
+            CodeCCUtils.errorLog(log, "termService.getSubterms('PROJECT-TYPE') failed", e);
+            return;
+        }
+        
+        if(CollectionUtils.isEmpty(termList))
+        {
+            return;
+        }
+        
+        for(Term term : termList)
+        {
+            termMap.put(term.getId(), term.getAttributes().get("ZH"));
+        }
+    }
+    
+    
+}
