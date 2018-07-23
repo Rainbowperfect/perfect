@@ -17,10 +17,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- * @author steven
  * @version 1.0
  * @description com.xx.manager.controller
- * @date 2018-2-24
  */
  -------------------- @RequestMapping(value = "upload",produces = MediaType.TEXT_HTML_VALUE)
 @Controller
