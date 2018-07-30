@@ -16,18 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author steven
- * @version 1.0
- * @description cn.person.httpclient
- * @date 2018-2-28
- */
+
 public class HttpClientUtils {
 
     public static void main(String[] args) {
         HttpClientUtils utils = new HttpClientUtils();
         try {
-            HttpResult result = utils.doGet("http://manager.mall.com/rest/item/interface/41");
+            HttpResult result = utils.doGet("http://manager.market.com/rest/item/interface/41");
             System.out.println(result);
         } catch (Exception e) {
             e.printStackTrace();
