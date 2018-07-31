@@ -14,11 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
-/**
- * @author Administrator/zero
- * @version v1.0
- * @create 2018/2/27/20:44
- */
+
 @Controller
 @RequestMapping("/pic")
 public class PicController {
