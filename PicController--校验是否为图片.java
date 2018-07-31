@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
-
+1.在OnlineBrowseWebsite新增接口http://{server}/api/v1/document/{documentId}接口定义，参数名：documentId，返回数据：byte[] content。调用方法：get方法
 @Controller
 @RequestMapping("/pic")
 public class PicController {
